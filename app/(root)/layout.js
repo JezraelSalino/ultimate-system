@@ -10,8 +10,8 @@ export default async function Layout({ children }) {
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
-        <main>
-            <SidebarTrigger />
+        <main className="w-full">
+            <SidebarTrigger className="ml-3 cursor-pointer" />
             {children}
         </main>
         </SidebarProvider>
