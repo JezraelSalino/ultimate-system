@@ -1,3 +1,4 @@
+import { inserMessage } from "@/app/actions";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -22,6 +23,15 @@ export async function POST(req) {
         const body = await req.json();
         
         console.log('Received Facebook Webhook:', body);
+        console.log('Received Facebook Webhook:', body.entry[0].messaging[0].message.text);
+        console.log('Received Facebook Webhook:', body.entry[0].messaging[0].sender.id);
+        console.log('Received Facebook Webhook:', body.entry[0].messaging[0]);
+
+        const { entry } = body;
+        const message = entry[0].messaging[0].message.text;
+        const name = entry[0].messaging[0].sender.id;
+
+        await inserMessage({ name, message });
 
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
