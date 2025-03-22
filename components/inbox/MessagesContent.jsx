@@ -1,11 +1,43 @@
+'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { useState } from 'react';
 
 import { CirclePlus, Send, ImagePlus } from 'lucide-react'
 
 export default function MessagesContent() {
+
+    const [message, setMessage] = useState('');
+    const [recipientId, setRecipientId] = useState('4800028590064156');
+    const [status, setStatus] = useState('');
+
+    const sendMessage = async (e) => {
+
+        e.preventDefault();
+        setStatus('Sending...');
+        try {
+          const response = await fetch('/api/send-facebook-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: message,
+              recipientId: recipientId,
+            }),
+          });
+          
+          const data = await response.json();
+          setStatus(`Message sent: ${JSON.stringify(data)}`);
+
+          console.log(data);
+        } catch (error) {
+          setStatus(`Error: ${error.message}`);
+        }
+    }
+
   return (
     <div className='w-full basis-1/2'>
         <Card className="h-full w-full py-0 gap-2">
@@ -37,10 +69,17 @@ export default function MessagesContent() {
                             <ImagePlus className='size-5' />
                         </Button>
                     </div>
-                    <Input placeholder="Type a message" />
-                    <Button variant="ghost" size="icon" className="cursor-pointer">
-                        <Send className='size-5' />
-                    </Button>
+                    <form className='flex flex-row items-center w-full' onSubmit={sendMessage}>
+                        <Input
+                            placeholder="Type a message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                        <Button variant="ghost" size="icon" className="cursor-pointer" type="submit"
+                        >
+                            <Send className='size-5' />
+                        </Button>
+                    </form>
                 </div>
             </CardFooter>
         </Card>
