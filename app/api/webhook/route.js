@@ -1,5 +1,14 @@
 import { inserMessage } from "@/app/actions";
 import { NextResponse } from "next/server";
+import Pusher from 'pusher';
+
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER,
+  useTLS: true
+});
 
 export async function GET(req) {
     const { searchParams } = new URL(req.url);
@@ -8,7 +17,6 @@ export async function GET(req) {
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
 
-    // Replace with your actual verify token
     const VERIFY_TOKEN = "z2zi596DwW2xpzvvAoAyP4FR3J0XdrM0qsDzjgsc7UvLBR2h0hC1VZL6aXiyDJ6K";
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
@@ -21,17 +29,29 @@ export async function GET(req) {
 export async function POST(req) {
     try {
         const body = await req.json();
-        
+
         console.log('Received Facebook Webhook:', body);
-        console.log('Received Facebook Webhook:', body.entry[0].messaging[0].message.text);
-        console.log('Received Facebook Webhook:', body.entry[0].messaging[0].sender.id);
-        console.log('Received Facebook Webhook:', body.entry[0].messaging[0]);
+        // console.log('Received Facebook Webhook:', body.entry[0].messaging[0].message.text);
+        // console.log('Received Facebook Webhook:', body.entry[0].messaging[0].sender.id);
+        // console.log('Received Facebook Webhook:', body.entry[0].messaging[0].recipient.id);
+        // console.log('Received Facebook Webhook:', body.entry[0].messaging[0]);
 
         const { entry } = body;
         const message = entry[0].messaging[0].message.text;
-        const name = entry[0].messaging[0].sender.id;
+        const sender = entry[0].messaging[0].sender.id;
+        const recipient = entry[0].messaging[0].recipient.id;
+        const provider = "facebook";
 
-        await inserMessage({ name, message });
+        const newMessage = await inserMessage({ sender, recipient, provider, message });
+
+        await pusher.trigger('messages-channel', 'new-message', {
+            id: newMessage.id,
+            message,
+            sender,
+            recipient,
+            provider,
+            timestamp: new Date().toISOString()
+        });
 
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {

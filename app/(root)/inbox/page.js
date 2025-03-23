@@ -8,7 +8,7 @@ export default function page() {
     <div className='container px-4 h-[calc(100vh-3rem)] min-w-full'>
       <div className='flex flex-row h-full gap-[1rem] min-w-full'>
             <UsersSections />
-            <MessagesContent />
+            {/* <MessagesContent /> */}
             <MessagesDetails />
       </div>
     </div>
